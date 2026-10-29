@@ -1,0 +1,342 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#7867f5">
+<title>Goalals 💜</title>
+<style>
+:root {
+  --purple: #7867f5;
+  --dark: #30295b;
+  --bg: #f6f5ff;
+  --card: #ffffff;
+  --muted: #77758e;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--dark);
+}
+button, input, textarea { font: inherit; }
+button {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+header {
+  background: linear-gradient(135deg,#7867f5,#a18afc);
+  color: white;
+  padding: 25px 20px 30px;
+  border-radius: 0 0 28px 28px;
+}
+.top {
+  max-width: 720px;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.logo { font-size: 28px; font-weight: 850; }
+.subtitle { margin-top: 7px; opacity: .9; }
+main { max-width: 720px; padding: 18px; margin: auto; }
+.card {
+  background: var(--card);
+  padding: 18px;
+  border-radius: 20px;
+  margin: 15px 0;
+  box-shadow: 0 5px 20px #392d7410;
+}
+h2 { font-size: 19px; margin: 0 0 14px; }
+label { display: block; font-size: 14px; font-weight: 650; }
+input, textarea {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #e5e1f5;
+  background: white;
+  color: var(--dark);
+  border-radius: 12px;
+  margin: 6px 0 12px;
+}
+.primary { background: var(--purple); color: white; }
+.secondary { background: #efedff; color: var(--dark); }
+.danger { background: #fff0f0; color: #b93850; }
+.full { width: 100%; }
+.notice { color: var(--muted); font-size: 13px; line-height: 1.5; }
+.tabs { display: flex; gap: 8px; margin: 16px 0; }
+.tab { flex: 1; background: #eae7fb; color: var(--dark); }
+.tab.active { background: var(--purple); color: white; }
+.progress { height: 9px; background: #ece9fa; border-radius: 10px; overflow: hidden; }
+#progressBar { height: 100%; width: 0; background: var(--purple); transition: width .2s; }
+.goal {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid #efedf8;
+  padding: 13px;
+  border-radius: 15px;
+  margin: 10px 0;
+}
+.goal.done { opacity: .62; }
+.goal.done .goal-name { text-decoration: line-through; }
+.goal-info { flex: 1; min-width: 0; }
+.goal-name { font-weight: 750; overflow-wrap: anywhere; }
+.small { color: var(--muted); font-size: 12px; margin-top: 5px; }
+.check { width: 22px; height: 22px; accent-color: var(--purple); margin: 0; }
+#notes { min-height: 150px; resize: vertical; }
+.hidden { display: none !important; }
+footer { text-align: center; color: var(--muted); font-size: 12px; padding: 20px; }
+@media(max-width:420px) {
+  main { padding: 12px; }
+  .card { padding: 14px; }
+  header { padding: 20px 15px 25px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="top">
+    <div>
+      <div class="logo">💜 Goalals</div>
+      <div class="subtitle">Küçük hedefler, büyük başarılar!</div>
+    </div>
+    <div>✨ Hadi başaralım!</div>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Hoş geldin! 🌸</h2>
+    <p class="notice">Bugün kendin için ne yapacaksın?</p>
+    <div class="progress"><div id="progressBar"></div></div>
+    <p id="progressText" class="notice">0 / 0 hedef tamamlandı</p>
+  </section>
+
+  <div class="tabs">
+    <button id="goalsTab" class="tab active">🎯 Hedeflerim</button>
+    <button id="notesTab" class="tab">📝 Notlarım</button>
+  </div>
+
+  <section id="goalsPanel">
+    <div class="card">
+      <h2>Yeni hedef ekle ✍️</h2>
+      <form id="goalForm">
+        <label for="goalName">Hedefin ne?</label>
+        <input id="goalName" maxlength="120" placeholder="Örn. 30 dakika kitap oku" required>
+
+        <label for="goalTime">Tarih ve saat</label>
+        <input id="goalTime" type="datetime-local" required>
+
+        <button class="primary full" type="submit">＋ Hedef ekle</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Hedef listem 📋</h2>
+      <div id="goalList"></div>
+    </div>
+  </section>
+
+  <section id="notesPanel" class="hidden">
+    <div class="card">
+      <h2>Kişisel notlarım 📝</h2>
+      <p class="notice">Notların bu tarayıcıda otomatik kaydedilir.</p>
+      <textarea id="notes" placeholder="Buraya notlarını yaz..."></textarea>
+      <p id="noteStatus" class="notice">Notların otomatik kaydedilir 💜</p>
+      <button id="clearNotes" class="secondary full" type="button">Notları temizle</button>
+    </div>
+  </section>
+</main>
+
+<footer>Goalals 💜 Kendine verdiğin sözleri tut!</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const STORAGE_KEY = "goalals_goals_v1";
+const NOTES_KEY = "goalals_notes_v1";
+
+let goals = [];
+let alerted = new Set();
+
+try {
+  goals = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  if (!Array.isArray(goals)) goals = [];
+} catch {
+  goals = [];
+}
+
+function saveGoals() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
+  } catch {
+    alert("Kaydetme başarısız oldu. Tarayıcı depolama alanını kontrol et.");
+  }
+}
+
+function formatDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Tarih belirtilmedi";
+  return date.toLocaleString("tr-TR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function renderGoals() {
+  const list = $("goalList");
+  const completed = goals.filter(goal => goal.done).length;
+
+  $("progressText").textContent =
+    `${completed} / ${goals.length} hedef tamamlandı`;
+
+  $("progressBar").style.width = goals.length
+    ? `${completed / goals.length * 100}%`
+    : "0%";
+
+  list.replaceChildren();
+
+  if (!goals.length) {
+    const empty = document.createElement("p");
+    empty.className = "notice";
+    empty.textContent = "Henüz hedefin yok. İlk hedefini ekle! 💜";
+    list.appendChild(empty);
+    return;
+  }
+
+  [...goals]
+    .sort((a, b) => new Date(a.dueAt) - new Date(b.dueAt))
+    .forEach(goal => {
+      const row = document.createElement("div");
+      row.className = "goal" + (goal.done ? " done" : "");
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "check";
+      checkbox.checked = goal.done;
+      checkbox.setAttribute("aria-label", "Hedefi tamamla");
+
+      checkbox.addEventListener("change", () => {
+        goal.done = checkbox.checked;
+        if (goal.done) alerted.add(goal.id);
+        saveGoals();
+        renderGoals();
+      });
+
+      const info = document.createElement("div");
+      info.className = "goal-info";
+
+      const name = document.createElement("div");
+      name.className = "goal-name";
+      name.textContent = goal.name;
+
+      const date = document.createElement("div");
+      date.className = "small";
+      date.textContent = "🕒 " + formatDate(goal.dueAt);
+
+      info.append(name, date);
+
+      const del = document.createElement("button");
+      del.className = "danger";
+      del.textContent = "Sil";
+      del.setAttribute("aria-label", "Hedefi sil");
+
+      del.addEventListener("click", () => {
+        if (!confirm("Bu hedefi silmek istiyor musun?")) return;
+        goals = goals.filter(item => item.id !== goal.id);
+        alerted.delete(goal.id);
+        saveGoals();
+        renderGoals();
+      });
+
+      row.append(checkbox, info, del);
+      list.appendChild(row);
+    });
+}
+
+$("goalForm").addEventListener("submit", event => {
+  event.preventDefault();
+
+  const name = $("goalName").value.trim();
+  const dueAt = $("goalTime").value;
+
+  if (!name || !dueAt) return;
+
+  goals.push({
+    id: Date.now().toString() + Math.random().toString(16).slice(2),
+    name,
+    dueAt: new Date(dueAt).toISOString(),
+    done: false
+  });
+
+  saveGoals();
+  renderGoals();
+  $("goalForm").reset();
+});
+
+function selectTab(tab) {
+  const showGoals = tab === "goals";
+  $("goalsPanel").classList.toggle("hidden", !showGoals);
+  $("notesPanel").classList.toggle("hidden", showGoals);
+  $("goalsTab").classList.toggle("active", showGoals);
+  $("notesTab").classList.toggle("active", !showGoals);
+}
+
+$("goalsTab").addEventListener("click", () => selectTab("goals"));
+$("notesTab").addEventListener("click", () => selectTab("notes"));
+
+$("notes").value = localStorage.getItem(NOTES_KEY) || "";
+
+$("notes").addEventListener("input", () => {
+  try {
+    localStorage.setItem(NOTES_KEY, $("notes").value);
+    $("noteStatus").textContent = "Kaydedildi 💜";
+  } catch {
+    $("noteStatus").textContent = "Kaydedilemedi. Depolama alanını kontrol et.";
+  }
+});
+
+$("clearNotes").addEventListener("click", () => {
+  if (!confirm("Bütün notlarını silmek istiyor musun?")) return;
+  $("notes").value = "";
+  localStorage.removeItem(NOTES_KEY);
+  $("noteStatus").textContent = "Notlar temizlendi.";
+});
+
+function checkReminders() {
+  const now = Date.now();
+
+  goals.forEach(goal => {
+    if (goal.done || alerted.has(goal.id)) return;
+
+    if (new Date(goal.dueAt).getTime() <= now) {
+      alerted.add(goal.id);
+
+      try {
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification("Goalals hatırlatması 💜", {
+            body: "Hedef zamanı geldi: " + goal.name
+          });
+        }
+      } catch {}
+
+      alert("💜 Goalals hatırlatması!\n\n" +
+        "Hedefinin zamanı geldi: " + goal.name);
+    }
+  });
+}
+
+renderGoals();
+setInterval(checkReminders, 30000);
+</script>
+</body>
+</html>
